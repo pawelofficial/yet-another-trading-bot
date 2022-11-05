@@ -1,0 +1,11 @@
+learn
+    1. forwart pass 
+    2. backward pass 
+    3. back propagation 
+    4. x.backward() , requires_grad()
+        requires_Grad=True -> flag for making pytorch able to calculate gradients 
+        x.backward() -> calculates gradient of your tensor 
+        x.detach() / x.requires_grad(False) -> detaching the gradient computation 
+        x.grad.zero_() -> zeroeing gradient tensor 
+    5. jacobian product / chain rule 
+    6. during training steps you have to clear weights grad !! 

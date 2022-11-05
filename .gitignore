@@ -1,0 +1,4 @@
+venv/*
+credentials/*
+/data/*.csv
+/optimization/NN_capstone1/data/*.csv
