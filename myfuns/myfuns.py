@@ -219,7 +219,7 @@ def get_percentile(row,df,colname):
     p=stats.percentileofscore(df[colname],row[colname])
     return p
 
-def example_workfloww(df,percentile_score=80):
+def example_workflow(df,percentile_score=80):
     # get 1p long short flags and long short scores  
     df[['1p_long','1p_short','longs_score','shorts_score']] =df.apply( lookahead_score, perc=0.015, df=df,  N=10 ,axis = 1  ) 
     p_longs=df['1p_long']==True
@@ -240,6 +240,55 @@ def example_workfloww(df,percentile_score=80):
     df['LONG_ENTRY']=df['close']==df['lowest_longs']
     df['LONG_EXIT']=df['close']==df['highest_shorts']
     return df, p_longs,p_shorts,percentile_longs,percentile_shorts,lowest_longs,highest_shorts
+
+
+def plot_candlestick2(candles_df : pd.DataFrame
+                      ,x1y1 : list =[]
+                      , x2y2 : list = []
+                      ,longs_ser : pd.Series = pd.Series({},dtype=np.float64)
+                      ,shorts_ser : pd.Series = pd.Series({},dtype=np.float64)
+                      ):
+    df=candles_df
+    plt.rcParams['axes.facecolor'] = 'y'
+    low=df['low']
+    high=df['high']
+    open=df['open']
+    close=df['close']
+    # mask for candles 
+    green_mask=df['close']>=df['open']
+    red_mask=df['open']>df['close']
+    up=df[green_mask]
+    down=df[red_mask]
+    # colors
+    col1='green'
+    black='black'
+    col2='red'
+
+    width = .4
+    width2 = .05
+
+    fig,ax=plt.subplots(2,1)
+    ax[0].bar(up.index,up['high']-up['close'],width2,bottom=up['close'],color=col1,edgecolor=black)
+    ax[0].bar(up.index,up['low']-up['open'],width2, bottom=up['open'],color=col1,edgecolor=black)
+    ax[0].bar(up.index,up['close']-up['open'],width, bottom=up['open'],color=col1,edgecolor=black)
+    ax[0].bar(down.index,down['high']- down['close'],width2,bottom=down['close'],color=col2,edgecolor=black)
+    ax[0].bar(down.index,down['low']-  down['open'],width2,bottom=down['open'],color=col2,edgecolor=black)
+    ax[0].bar(down.index,down['close']-down['open'],width,bottom=down['open'],color=col2,edgecolor=black)
+
+    for xy in x1y1:
+        ax[0].plot(xy[0],xy[1])
+        
+        
+    for xy in x2y2:
+        ax[1].plot(xy[0],xy[1])
+
+    if not longs_ser.empty:
+        msk=longs_ser==True
+        ax[0].plot(longs_ser[msk].index, df[msk]['low']*longs_ser[msk].astype(int),'^g')
+
+    if not shorts_ser.empty:
+        msk=shorts_ser==True
+        ax[0].plot(shorts_ser[msk].index, df[msk]['high']*shorts_ser[msk].astype(int),'vr')
 
 
 # plts candlestick fren 
