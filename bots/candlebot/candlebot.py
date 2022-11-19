@@ -5,7 +5,7 @@ import datetime
 import logging
 logging.basicConfig(level=logging.INFO,filename='bot.log',filemode='w')
 import time 
-import winsound
+#import winsound
 
 class candlebot:
     def __init__(self,binance_config='./configs/binance_api.json') -> None:
@@ -245,7 +245,7 @@ class candlebot:
         assertions_met=self.check_assertions()
         
         if assertions_met:
-            winsound.Beep(500,1000)
+#            winsound.Beep(500,1000)
             print('making a trade!')
             self.log_variable(var='', msg = ' buying bags ')
             
@@ -257,7 +257,7 @@ class candlebot:
         if green_candles_assertion:
             print('selling bags ')
             self.log_variable(var='', msg = ' selling bags ')
-            winsound.Beep(500,2000)
+#            winsound.Beep(500,2000)
             var=self.b.get_historical_orders(symbol=self.trading_symbol,last_n=2)
             self.b.try_to_close_all_by_symbol(symbol=self.trading_symbol)       
 
