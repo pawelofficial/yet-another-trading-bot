@@ -123,7 +123,7 @@ class candlebot:
         return dt<=self.end_of_candle_cutoff    # are we at the end of the candle? 
     
     # returns True if current candle is red  - duplicate counters job though 
-    def assertion_currently_red(self,scale='1min',interval='15min'):
+    def assertion_currently_red(self,scale='5min',interval='1hour'):
         self.get_df_from_api(scale=scale,interval=interval)             # refresh dataframe 
         last_row=self.df.iloc[-1]                                       # get last row because it's nice to have a variable for everything 
         return last_row['open']>=last_row['close']                      # return True if red 
@@ -231,11 +231,11 @@ class candlebot:
     
     
     # simple strategy for buying on n red candles, selling when SL or TRTP or TP , or when n green candles happen just to know if it's working 
-    def simple_strategy(self,symbol=None,n_candles=2):
+    def simple_strategy(self,symbol=None,n_candles=6):
         if symbol is None: 
             self.trading_symbol='ADAUSDT'
             
-        self.get_df_from_api(scale='1min',interval='15min') # get df 
+        self.get_df_from_api(scale='5min',interval='1hour') # get df 
         self.calculate_counts()
         print(self.df.to_string())
         print(datetime.datetime.now())
@@ -244,7 +244,7 @@ class candlebot:
         self.end_of_candle_cutoff=15      # buy in last n seconds of a candle 
         assertions_met=self.check_assertions()
         
-        if assertions_met:
+        if assertions_met :
 #            winsound.Beep(500,1000)
             print('making a trade!')
             self.log_variable(var='', msg = ' buying bags ')
@@ -253,15 +253,18 @@ class candlebot:
             r=self.market_buy(dollar_amo=20, pnl_comment=' buy after assertion  ')
             self.update_pnl_df()
         
-        green_candles_assertion=self.assertion_last_n_red(colname='green_cnt',n=2)
-        if green_candles_assertion:
-            print('selling bags ')
-            self.log_variable(var='', msg = ' selling bags ')
+#        green_candles_assertion=self.assertion_last_n_red(colname='green_cnt',n=2)
+#        if green_candles_assertion:
+#            print('selling bags ')
+#            self.log_variable(var='', msg = ' selling bags ')
 #            winsound.Beep(500,2000)
-            var=self.b.get_historical_orders(symbol=self.trading_symbol,last_n=2)
-            self.b.try_to_close_all_by_symbol(symbol=self.trading_symbol)       
+#            var=self.b.get_historical_orders(symbol=self.trading_symbol,last_n=2)
+#            self.b.try_to_close_all_by_symbol(symbol=self.trading_symbol)       
 
-        self.execute_tp(pnl_comment='executing tp ')
+        self.execute_trtp(pnl_comment='execute trtp')
+        self.log_variable(var=self.pnl_df, msg=' pnl df ')
+        
+#        self.execute_tp(pnl_comment='executing tp ')
         self.execute_sl(pnl_comment='executing sl ')
 
 

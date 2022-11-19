@@ -1,4 +1,5 @@
 credentials/*
+/venv2/*
 /data/*.csv
 /optimization/NN_capstone1/data/*.csv
 /bots/candlebot/configs/*
