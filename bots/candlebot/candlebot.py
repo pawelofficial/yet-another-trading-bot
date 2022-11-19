@@ -230,7 +230,7 @@ class candlebot:
                 self.market_sell_tradeid(orderid=row['tradeid'],pnl_comment=f'TRTP {pnl_comment}')
     
     
-    # simple strategy for buying on n red candles, selling when SL or TRTP or TP , or when n green candles happen 
+    # simple strategy for buying on n red candles, selling when SL or TRTP or TP , or when n green candles happen just to know if it's working 
     def simple_strategy(self,symbol=None,n_candles=2):
         if symbol is None: 
             self.trading_symbol='ADAUSDT'
@@ -259,12 +259,11 @@ class candlebot:
             self.log_variable(var='', msg = ' selling bags ')
             winsound.Beep(500,2000)
             var=self.b.get_historical_orders(symbol=self.trading_symbol,last_n=2)
-#            self.execute_sl(force=True,pnl_comment='selling on green candles ! ')
             self.b.try_to_close_all_by_symbol(symbol=self.trading_symbol)       
 
         self.execute_tp(pnl_comment='executing tp ')
         self.execute_sl(pnl_comment='executing sl ')
-#        self.execute_trtp()
+
 
 
 
