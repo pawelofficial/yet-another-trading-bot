@@ -1,18 +1,21 @@
 from binance_api2 import BApi
-from candles_counter import candles_counter
+from candles_counter import countero2 as candles_counter
 import pandas as pd 
 import datetime 
 import logging
 logging.basicConfig(level=logging.INFO,filename='bot.log',filemode='w')
 import time 
+ 
 #import winsound
 
 class candlebot:
     def __init__(self,binance_config='./configs/binance_api.json') -> None:
         self.b=BApi(api_config=binance_config)          # binance api object 
         self.df=None                                    # dataframe with data 
-        self.last_n_cnt= 5                              # buy after n consecutive red candles ! 
-        self.end_of_candle_cutoff=30                    # buy in last 10 seconds of interval 
+        self.last_n_cnt= 6                              # buy after n consecutive red candles ! 
+        self.end_of_candle_cutoff=15                    # buy in last 10 seconds of interval 
+        self.scale='1min'
+        self.interval='15min'
         self.loop_frequency=20                          # should be lower than end of candle cutoff
         self.time_format='%Y-%m-%d %H:%M:%S'
         self.dt_fun = lambda t1,t2: int((datetime.datetime.strptime(t1,self.time_format)-datetime.datetime.strptime(t2,self.time_format)).total_seconds())
@@ -74,7 +77,7 @@ class candlebot:
     def log_variable(self,var,msg='',wait=False):
         if var is None:
             var='None'
-        s= f' {msg} : {var}'
+        s= f' {msg} \n{var}'
         logging.info(s)
         if wait:
             print(s)
@@ -94,12 +97,15 @@ class candlebot:
         df.loc[len(df)]=d
     
     # gets df from api 
-    def get_df_from_api(self,scale='1min',interval='1hour'):
+    def get_df_from_api(self,scale,interval):
+        scale=self.scale 
+        interval=self.interval
         klines=self.b.get_recent_candles(symbol=self.trading_symbol,scale=scale,interval=interval)
         self.df=self.b.parsed_kline_list_to_df(parsed_kline_list=klines)
         if 0:
             print('zump it')
             self.df.to_csv('./data/test_df.csv',index=False)
+
         
         
     # adds green_cnt and red_cnt to a df 
@@ -123,7 +129,11 @@ class candlebot:
         return dt<=self.end_of_candle_cutoff    # are we at the end of the candle? 
     
     # returns True if current candle is red  - duplicate counters job though 
-    def assertion_currently_red(self,scale='5min',interval='1hour'):
+    def assertion_currently_red(self,scale=None,interval=None):
+        if scale is None:
+            scale=self.scale 
+        if interval is None:
+            interval=self.interval
         self.get_df_from_api(scale=scale,interval=interval)             # refresh dataframe 
         last_row=self.df.iloc[-1]                                       # get last row because it's nice to have a variable for everything 
         return last_row['open']>=last_row['close']                      # return True if red 
@@ -234,49 +244,44 @@ class candlebot:
     def simple_strategy(self,symbol=None,n_candles=6):
         if symbol is None: 
             self.trading_symbol='ADAUSDT'
-            
-        self.get_df_from_api(scale='5min',interval='1hour') # get df 
+        self.get_df_from_api(scale=self.scale,interval=self.interval) # get df 
         self.calculate_counts()
-        print(self.df.to_string())
-        print(datetime.datetime.now())
-        print('-----')
-        self.last_n_cnt=n_candles         # buy after n candles red 
-        self.end_of_candle_cutoff=15      # buy in last n seconds of a candle 
+        self.update_pnl_df()
         assertions_met=self.check_assertions()
-        
-        if assertions_met :
-#            winsound.Beep(500,1000)
+# manual         
+#        x=input('buy y/n: ')
+#        if assertions_met or x=='y' :
+        if assertions_met:
             print('making a trade!')
-            self.log_variable(var='', msg = ' buying bags ')
-            
+            self.log_variable(var='', msg = ' buying bags ')    
             self.update_pnl_df()
             r=self.market_buy(dollar_amo=20, pnl_comment=' buy after assertion  ')
             self.update_pnl_df()
+        #self.execute_trtp(pnl_comment='execute trtp')
+        self.log_variable(var=self.pnl_df.to_string(), msg='pnl_df')
         
-#        green_candles_assertion=self.assertion_last_n_red(colname='green_cnt',n=2)
-#        if green_candles_assertion:
-#            print('selling bags ')
-#            self.log_variable(var='', msg = ' selling bags ')
-#            winsound.Beep(500,2000)
-#            var=self.b.get_historical_orders(symbol=self.trading_symbol,last_n=2)
-#            self.b.try_to_close_all_by_symbol(symbol=self.trading_symbol)       
-
-        self.execute_trtp(pnl_comment='execute trtp')
-        self.log_variable(var=self.pnl_df, msg=' pnl df ')
-        
-#        self.execute_tp(pnl_comment='executing tp ')
+# manual        
+#        y=input('execute sl? y/n: ')
+#        if y=='y':
+#            self.execute_sl(pnl_comment='executing sl by force',force=True )
         self.execute_sl(pnl_comment='executing sl ')
 
 
-
-
-
+        print(self.df)
+        print(assertions_met,'  ',datetime.datetime.now().isoformat())
+        print('------')
+        
 
 if __name__=='__main__':
     c=candlebot()
+    c.b.try_to_close_all_by_symbol(symbol='ADAUSDT')
+
+    c.scale='1min'
+    c.interval='15min'
     while True:
         c.simple_strategy()
         time.sleep(15)
+    
 
     exit(1)
 

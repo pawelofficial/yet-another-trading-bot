@@ -11,36 +11,41 @@ import pandas as pd
 import numpy as np 
 
 
-def candles_counter(ser): # counts consecutive occurences of value in a series 
-    #- i used to be able to write recursion but now not so much apparently :( :( 
-    def countero(l,index):
-        l= l[:index+1]
-        cnt=1
-        i=0
-        while True:
-#            print(l)
-#            print(index,i)
-#            input()
-            ass=l[index-i]==l[index-i-1]
-            if ass:
-                i=i+1
-                cnt=cnt+1
-            else:
-                break
-            if i>=len(l):
-                break
 
-        return cnt 
-    l=list(ser)
-    counts=[]
-    index=len(l)-1
-    while index>=1:
-        counts.append(countero(l,index))
-        index=index-1
-    counts.append(1)
-    counts.reverse()
-    return counts
+def countero2(ser):
+    colors=list(ser)            # list of zeros and ones 
+    counts=[-1 for i in colors] # declare colors of counts 
+    
+    for no,(color,count) in enumerate(zip(colors,counts)):
+        if no==0:           # first count equals a color  
+            counts[no]=color
+        else:               # next counts equal previous count + current color 
+            counts[no]=counts[no-1]+color
+        if color==0:        # if color is zero then reset the count 
+            counts[no]=color
+#        print(n,color,count)
+#    print(f'counts {counts}')   
+#    print(f'colors {colors}')   
+    return counts 
 
+
+def read_from_clipboard():
+    # copy paste your df from log to clipboard
+    # change timestamp formats from 2022-11-20 08:45:00 to 2022-11-20T08:45:00
+    # in python shell execute 
+    # df=pd.read_clipboard()
+    # df.to_csv(path_or_buf='C:\\Users\\zdune\\Documents\\moonboy\\yet-another-trading-bot\\bots\\candlebot\\dobry_df.csv',sep='|',header=True,index=False)
+    df=pd.read_csv(filepath_or_buffer='./dobry_df.csv',sep='|')
+
+#    df.drop(labels=['red_cnt','green_cnt'],axis=1,inplace=True)
+    df.drop(labels=['volume','open_epoch','close_epoch'],inplace=True,axis=1)
+    
+    if 1: # drop original counts 
+        df.drop(labels=['green_cnt','red_cnt'],axis=1,inplace=True)
+    else:
+        df.rename(columns={'red_cnt':'or_red_cnt','green_cnt':'or_green_cnt'},inplace=True)
+    return df 
+    
 if __name__=='__main__':
     if 0:  # read data from api, aggregate and dump 
         nn.read_raw_data_from_api()
@@ -48,7 +53,10 @@ if __name__=='__main__':
         agg_df=nn.aggregate_df(df=df,scale=5)
         nn.dump_df(df=agg_df,filename='agg_df_5')
     
-    df=nn.read_df_from_file(filename='agg_df_5')
+#    df=nn.read_df_from_file(filename='agg_df_5')
+    df= read_from_clipboard()
+
+    
     
     df['green']=df['close']>df['open']
     df['red']=df['close']<=df['open'] # <= ?? 
@@ -56,10 +64,11 @@ if __name__=='__main__':
     df['green']=df['green'].astype(int)
     df['red']=df['red'].astype(int)
     
-
-    counts=candles_counter(df['green'])
+    
+    counts=countero2(df['green'])
     df['green_counts']=counts
-    counts=candles_counter(df['red'])
+    print(df)
+    counts=countero2(df['red'])
     df['red_counts']=counts
     print(df)
 
