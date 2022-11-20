@@ -257,7 +257,8 @@ class candlebot:
             self.update_pnl_df()
             r=self.market_buy(dollar_amo=20, pnl_comment=' buy after assertion  ')
             self.update_pnl_df()
-        #self.execute_trtp(pnl_comment='execute trtp')
+            
+        self.execute_trtp(pnl_comment='execute trtp')
         self.log_variable(var=self.pnl_df.to_string(), msg='pnl_df')
         
 # manual        
