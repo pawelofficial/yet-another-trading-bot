@@ -106,8 +106,6 @@ class candlebot:
             print('zump it')
             self.df.to_csv('./data/test_df.csv',index=False)
 
-        
-        
     # adds green_cnt and red_cnt to a df 
     def calculate_counts(self):
         self.df['green']=self.df['open']<self.df['close']
@@ -119,7 +117,7 @@ class candlebot:
         if 1: # ze drop 
             self.df.drop(columns=['green','red'],inplace=True ) 
         
-    # returns True if we are near the end of the candle 
+    # returns True if we are near the end of the candle  - no df refresh 
     def assertion_end_of_candle(self):
         if self.df is None:
             return False
@@ -128,13 +126,13 @@ class candlebot:
         dt=self.dt_fun(dt2,dt1)                 # seconds between
         return dt<=self.end_of_candle_cutoff    # are we at the end of the candle? 
     
-    # returns True if current candle is red  - duplicate counters job though 
+    # returns True if current candle is red  - duplicate counters job though  - no df refresh 
     def assertion_currently_red(self,scale=None,interval=None):
         if scale is None:
             scale=self.scale 
         if interval is None:
             interval=self.interval
-        self.get_df_from_api(scale=scale,interval=interval)             # refresh dataframe 
+        #self.get_df_from_api(scale=scale,interval=interval)            # refresh dataframe 
         last_row=self.df.iloc[-1]                                       # get last row because it's nice to have a variable for everything 
         return last_row['open']>=last_row['close']                      # return True if red 
  
@@ -196,7 +194,6 @@ class candlebot:
                 continue
             if row['status'] !='OPEN-LONG':
                 continue
-                
             current_price=response[key]
             cur_pnl=current_price/float(row['price']) # one endpoint returns stuff as float another as str meh 
             self.pnl_df.loc[index,'cur_pnl']=cur_pnl
@@ -223,8 +220,7 @@ class candlebot:
                 continue
             if row['status']!='OPEN-LONG':
                 continue
-            
-            pnl=row['cur_pnl']
+            pnl=row['cur_pnl'] # cur pnl in a row calculated in update_pnl_df 
             if pnl>self.pnl_tp or force:
                 self.market_sell_tradeid(orderid=row['tradeid'],pnl_comment=f'TP {pnl_comment}')
 
@@ -235,10 +231,9 @@ class candlebot:
                 continue
             if row['status']!='OPEN-LONG':
                 continue
-            tr_pnl=row['cur_pnl']/row['max_pnl']
+            tr_pnl=row['cur_pnl']/row['max_pnl'] 
             if tr_pnl<self.tr_sl or force:
                 self.market_sell_tradeid(orderid=row['tradeid'],pnl_comment=f'TRTP {pnl_comment}')
-    
     
     # simple strategy for buying on n red candles, selling when SL or TRTP or TP , or when n green candles happen just to know if it's working 
     def simple_strategy(self,symbol=None,n_candles=6):
@@ -265,10 +260,10 @@ class candlebot:
 #        y=input('execute sl? y/n: ')
 #        if y=='y':
 #            self.execute_sl(pnl_comment='executing sl by force',force=True )
-        self.execute_sl(pnl_comment='executing sl ')
+        self.execute_sl(pnl_comment='executing sl')
 
 
-        print(self.df)
+        print(self.df.iloc[-4:])
         print(assertions_met,'  ',datetime.datetime.now().isoformat())
         print('------')
         

@@ -8,7 +8,8 @@ logging.basicConfig(level=logging.INFO,filename='binance_log.log',filemode='w')
 import datetime
 import pandas as pd 
 import random 
-from playground import return_on_failure
+from playground import return_on_failure,retry_on_index_failure
+
 
 
 class BApi:
@@ -107,6 +108,7 @@ class BApi:
         return bags                            # list of positions with non zero amount 
     
     # checks current price of a symbol - returns parsed kline ! 
+    @retry_on_index_failure({}) # sometimes you get a bad response from api  and d[0] fails 
     def check_current_price(self,symbol) -> dict:
         kline=self.client.get_historical_klines(symbol, self.kline_d['1min'],self.scale_d['1min'])
         d=self.parse_kline(kline_list=kline)
@@ -274,18 +276,27 @@ def close_all_orders_by_symbol(b: BApi):
     symbol='BUSDUSDT'
     b.try_to_close_all_by_symbol(symbol=symbol)
     
+def check_current_price(b: BApi):
+    r=b.check_current_price(symbol='ADAUSDT')
+    print(r)
+    
 if __name__=='__main__':
     b=BApi(api_config='./configs/binance_api.json')
     #b.get_historical_orders(symbol='')
-    show_bags_example(b=b)
+ 
+ #   show_bags_example(b=b)
     
     if 0:
         market_buy_example(b=b)
-    if 1: 
+    if 0: 
         close_long_orderid(b=b)    
-    if 1:
+    if 0:
         close_all_orders_by_symbol(b=b)
+    if 1:
+        while True:
+            check_current_price(b=b)
+            time.sleep(1)
     
-    show_bags_example(b=b)
+#    show_bags_example(b=b)
     
     
