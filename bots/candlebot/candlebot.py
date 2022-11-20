@@ -14,8 +14,8 @@ class candlebot:
         self.df=None                                    # dataframe with data 
         self.last_n_cnt= 2                              # buy after n consecutive red candles ! 
         self.end_of_candle_cutoff=15                    # buy in last 10 seconds of interval 
-        self.scale='1min'
-        self.interval='15min'
+        self.scale='5min'
+        self.interval='1hour'
         self.loop_frequency=20                          # should be lower than end of candle cutoff
         self.time_format='%Y-%m-%d %H:%M:%S'
         self.dt_fun = lambda t1,t2: int((datetime.datetime.strptime(t1,self.time_format)-datetime.datetime.strptime(t2,self.time_format)).total_seconds())
