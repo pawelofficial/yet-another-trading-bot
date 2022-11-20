@@ -12,7 +12,7 @@ class candlebot:
     def __init__(self,binance_config='./configs/binance_api.json') -> None:
         self.b=BApi(api_config=binance_config)          # binance api object 
         self.df=None                                    # dataframe with data 
-        self.last_n_cnt= 6                              # buy after n consecutive red candles ! 
+        self.last_n_cnt= 2                              # buy after n consecutive red candles ! 
         self.end_of_candle_cutoff=15                    # buy in last 10 seconds of interval 
         self.scale='1min'
         self.interval='15min'
@@ -46,9 +46,9 @@ class candlebot:
         self.check_assertions = lambda : all([v() for k,v in self.assertion_d.items()]) # function to check if all assertions are ok  
             
         # pnl structures for stop losses and take profits 
-        self.pnl_sl=0.99        # stop loss 
-        self.pnl_tp=1.01        # take profit 
-        self.tr_sl=0.99         # trailing stop loss 
+        self.pnl_sl=0.995        # stop loss 
+        self.pnl_tp=1.005        # take profit 
+        self.tr_sl=0.995         # trailing stop loss 
         self.pnl_d={'tradeid':None,
                     'price':None,
                     'status':None,
