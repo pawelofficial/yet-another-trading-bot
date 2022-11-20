@@ -21,11 +21,11 @@ def retry_on_index_failure(value):
       i=0
       while i<5:
         i+=1
-        time.sleep(2)
-        logging.info(' retrying on failure ')
         try:
            return f(*args,**kwargs)
         except IndexError as er:
+           time.sleep(2)
+           logging.info(' retrying on failure ')
            print('Error')
            return value
     return applicator
@@ -39,11 +39,11 @@ def retry_on_any_error(value):
       i=0
       while i<5:
         i+=1
-        time.sleep(2)
-        logging.info(' retrying on error ')
         try:
            return f(*args,**kwargs)
         except Exception as er:
+           time.sleep(2)
+           logging.info(' retrying on error ')
            logging.info(er)
            print('Error')
            return value
