@@ -4,6 +4,7 @@ import pandas as pd
 import datetime 
 import logging
 logging.basicConfig(level=logging.INFO,filename='bot.log',filemode='w')
+from playground import retry_on_any_error
 import time 
  
 #import winsound
@@ -186,6 +187,7 @@ class candlebot:
         return response
         
     # updates pnls df with each price 
+    @retry_on_any_error({})
     def update_pnl_df(self):
         response=self.b.check_current_price(symbol=self.trading_symbol)  # check price for a row this shouldn't be done in a loop but whatever.
         key='close' # current price assumption 

@@ -42,6 +42,7 @@ class BApi:
         }
         self.scale_d={
             '1min':'1 minutes ago UTC'
+            ,'3min':'3 minutes ago UTC'
             ,'5min':'5 minutes ago UTC'
             ,'15min':'15 minutes ago UTC'
             ,'1hour':'1 hour ago UTC'
@@ -110,7 +111,7 @@ class BApi:
     # checks current price of a symbol - returns parsed kline ! 
     @retry_on_index_failure({}) # sometimes you get a bad response from api  and d[0] fails 
     def check_current_price(self,symbol) -> dict:
-        kline=self.client.get_historical_klines(symbol, self.kline_d['1min'],self.scale_d['1min'])
+        kline=self.client.get_historical_klines(symbol, self.kline_d['1min'],self.scale_d['3min'])
         d=self.parse_kline(kline_list=kline)
         return d[0] # returns: {'open_epoch': 1668177840000.0, 'open': 16553.21, 'close': 16573.0, 'high': 16553.12, 'low': 16557.4, 'volume': 118.09522, 'open_utc': '2022-11-11 15:44:00'}
     
