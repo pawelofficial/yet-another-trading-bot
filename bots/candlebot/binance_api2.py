@@ -113,9 +113,6 @@ class BApi:
     def check_current_price(self,symbol) -> dict:
         kline=self.client.get_historical_klines(symbol, self.kline_d['1min'],self.scale_d['3min'])
         d=self.parse_kline(kline_list=kline)
-        print(kline)
-        print(d)
-        input('wait')
         return d[0] # returns: {'open_epoch': 1668177840000.0, 'open': 16553.21, 'close': 16573.0, 'high': 16553.12, 'low': 16557.4, 'volume': 118.09522, 'open_utc': '2022-11-11 15:44:00'}
     
     # returns recent candles of given scale over given interval 
