@@ -276,8 +276,8 @@ if __name__=='__main__':
     c=candlebot()
     c.b.try_to_close_all_by_symbol(symbol='ADAUSDT')
 
-    c.scale='1min'
-    c.interval='15min'
+    c.scale='5min'
+    c.interval='1hour'
     while True:
         c.simple_strategy()
         time.sleep(15)
