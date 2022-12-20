@@ -8,6 +8,9 @@ bots/candlebot/data/BTC-USD2022-01-10_2022-01-18.csv
 bots/candlebot/data/test_df.csv
 bots/candlebot/binance_log.log
 bots/brute_bot/data/
+bots/brute_bot/models/
+!bots/brute_bot/models/model_chad.pt
+bots/brute_bot/data/
 bots/brute_bot/models
 !bots/brute_bot/model_chad.pt
 myfuns/__pycache__/myfuns.cpython-39.pyc
