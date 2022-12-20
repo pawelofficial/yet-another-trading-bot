@@ -292,7 +292,7 @@ class ApiUtils:
         granularity=60,
         filename=f"{api.asset_id}{start_dt.isoformat()[:10]}_{server_dt.isoformat()[:10]}"+'.csv' )
         
-    def download_by_dates(self,api,start_date='10-01-2022',end_date='18-01-2022',path='./'):
+    def download_by_dates(self,api,start_date='01-01-2022',end_date='30-01-2022',path='./'):
         start_dt=datetime.datetime.strptime(start_date, '%d-%m-%Y')
         end_dt=datetime.datetime.strptime(end_date, '%d-%m-%Y')
         api.bulk_download_data(
@@ -359,7 +359,7 @@ if __name__=='__main__':
     if 0:  # downloads  last n days 
         utils.download_last_n_days(api=api,n=2,path='./')
     if 1: 
-        utils.download_by_dates(api=api,path='./')
+        utils.download_by_dates(api=api,start_date='01-01-2022',end_date='19-01-2022',path='./')
         
     if 0:# updates api.data_df with historical data 
         histdf=utils.feed_df(api=api,n=2,m=1)
