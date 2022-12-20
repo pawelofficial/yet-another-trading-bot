@@ -22,6 +22,8 @@ Yii=[f(x) for x in Xii]
 # ------------------------------------------------------------------------ numpy based trivial machine learning 44
 Xi=Xii
 Yi=Yii
+
+
 # model prediction - forward pass 
 def forward(w,x):
     return w*x 
@@ -53,6 +55,7 @@ import torch
 # now you need tensors 
 Xi=torch.tensor(Xii,dtype=torch.float32)
 Yi=torch.tensor(Yii, dtype=torch.float32)
+
 
 w=torch.tensor([0],dtype=torch.float32,requires_grad=True)
 

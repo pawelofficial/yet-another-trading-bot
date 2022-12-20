@@ -3,6 +3,7 @@ import pandas as pd
 import datetime
 from typing import Callable
 import numpy as np 
+import matplotlib.pyplot as plt 
 # logs variable 
 def log_variable(var,msg='',wait=False):
     if var is None:
@@ -14,12 +15,65 @@ def log_variable(var,msg='',wait=False):
         input('waiting in log ')
         
         
+def plot_candlestick2(candles_df : pd.DataFrame
+                      ,x1y1 : list =[]
+                      , x2y2 : list = []
+                      ,longs_ser : pd.Series = pd.Series({},dtype=np.float64)
+                      ,shorts_ser : pd.Series = pd.Series({},dtype=np.float64)
+                      ):
+    df=candles_df
+    plt.rcParams['axes.facecolor'] = 'y'
+    low=df['low']
+    high=df['high']
+    open=df['open']
+    close=df['close']
+    # mask for candles 
+    green_mask=df['close']>=df['open']
+    red_mask=df['open']>df['close']
+    up=df[green_mask]
+    down=df[red_mask]
+    # colors
+    col1='green'
+    black='black'
+    col2='red'
+
+    width = .4
+    width2 = .05
+
+    fig,ax=plt.subplots(2,1)
+    ax[0].bar(up.index,up['high']-up['close'],width2,bottom=up['close'],color=col1,edgecolor=black)
+    ax[0].bar(up.index,up['low']-up['open'],width2, bottom=up['open'],color=col1,edgecolor=black)
+    ax[0].bar(up.index,up['close']-up['open'],width, bottom=up['open'],color=col1,edgecolor=black)
+    ax[0].bar(down.index,down['high']- down['close'],width2,bottom=down['close'],color=col2,edgecolor=black)
+    ax[0].bar(down.index,down['low']-  down['open'],width2,bottom=down['open'],color=col2,edgecolor=black)
+    ax[0].bar(down.index,down['close']-down['open'],width,bottom=down['open'],color=col2,edgecolor=black)
+
+    for xy in x1y1:
+        ax[0].plot(xy[0],xy[1])
+        
+        
+    for xy in x2y2:
+        ax[1].plot(xy[0],xy[1])
+
+    if not longs_ser.empty:
+        msk=longs_ser==True
+        ax[0].plot(longs_ser[msk].index, df[msk]['low']*longs_ser[msk].astype(int),'^g')
+
+    if not shorts_ser.empty:
+        msk=shorts_ser==True
+        ax[0].plot(shorts_ser[msk].index, df[msk]['high']*shorts_ser[msk].astype(int),'vr')
+
+
     
 def aggregate(df :pd.DataFrame = pd.DataFrame({}), 
               scale : int = 5, 
               src_col : str = 'timestamp',
-              cols : list = ['open','close','low','high']):
+              cols : list = ['open','close','low','high','volume'],
+              timestamp_name='timestamp'):
     tformat='%Y-%m-%dT%H:%M:%S.%fZ'
+#    for col in cols:
+#        df[col].apply(pd.to_numeric)
+    
     floor_dt =  lambda df,str_col, scale: df[str_col].apply(lambda x: datetime.datetime.strptime(x,tformat) -
                     datetime.timedelta(
                     minutes=( datetime.datetime.strptime(x,tformat).minute) % scale,
@@ -31,7 +85,7 @@ def aggregate(df :pd.DataFrame = pd.DataFrame({}),
                  'close':lambda ser: ser.iloc[-1],
                  'high':lambda ser: ser.max(),
                  'low': lambda ser: ser.min(),
-                 'volume': lambda ser: ser.mean()
+                 'volume': lambda ser: ser.sum()
                 }  
     
     if src_col not in df.columns:
@@ -47,48 +101,14 @@ def aggregate(df :pd.DataFrame = pd.DataFrame({}),
         g=df[[col,dt_col]].groupby([dt_col])
         ser=g.apply(agg_funs_d[col])[col].reset_index(name=col)
         agg_df=agg_df.merge(ser,left_on=dt_col,right_on=dt_col)
-    #agg_df['index']=agg_df.index
+
+
+    agg_df.rename(columns={dt_col:timestamp_name},inplace=True)
     return agg_df
 
-def rsi(ser, periods = 14, ema = True):
-    """
-    Returns a pd.Series with the relative strength index.
-    """
-    close_delta = ser.diff()
 
-    # Make two series: one for lower closes and one for higher closes
-    up = close_delta.clip(lower=0)
-    down = -1 * close_delta.clip(upper=0)
+if __name__=='__main__':
+    df=pd.read_csv('./data/BTC-USD2022-01-10_2022-01-18.csv')
     
-    if ema == True:
-	    # Use exponential moving average
-        ma_up = up.ewm(com = periods - 1, adjust=True, min_periods = periods).mean()
-        ma_down = down.ewm(com = periods - 1, adjust=True, min_periods = periods).mean()
-    else:
-        # Use simple moving average
-        ma_up = up.rolling(window = periods, adjust=False).mean()
-        ma_down = down.rolling(window = periods, adjust=False).mean()
-        
-    rsi = ma_up / ma_down
-    rsi = 100 - (100/(1 + rsi))
-    return rsi
-
-
-pairs=[('ema-25', 'ema-15'), ('ema-50', 'ema-25'), ('ema-20', 'ema-25'), ('ema-10', 'ema-25'), ('ema-15', 'ema-25'), ('ema-5', 'ema-25'), ('ema-25', 'ema-25'), ('ema-50', 'ema-20'), ('ema-50', 'ema-10'), ('ema-20', 'ema-20'), ('ema-20', 'ema-10'), ('ema-50', 'ema-50'), ('ema-20', 'ema-50'), ('ema-15', 'ema-20'), ('ema-10', 'ema-20'), ('ema-10', 'ema-10'), ('ema-15', 'ema-10'), ('ema-50', 'ema-5'), ('ema-5', 'ema-20'), ('ema-5', 'ema-10'), ('ema-10', 'ema-50'), ('ema-5', 'ema-50'), ('ema-15', 'ema-50'), ('ema-20', 'ema-5'), ('ema-25', 'ema-10'), ('ema-25', 'ema-20'), ('ema-15', 'ema-5'), ('ema-10', 'ema-5'), ('ema-50', 'ema-15'), ('ema-5', 'ema-5'), ('ema-25', 'ema-50'), ('ema-20', 'ema-15'), ('ema-25', 'ema-5'), ('ema-15', 'ema-15'), ('ema-10', 'ema-15'), ('ema-5', 'ema-15')]
-
-
-
-def unique_pairs(pairs):
-    # input: [(1,2),(2,1)]
-    # output: -> [[1,2]]
-    unique_pairs=[]
-    f= lambda s: int(s.split('-')[-1])
-    ordered_pairs=[ sorted(list(s),key=f) for s in pairs ]
-    for pair in ordered_pairs:
-        if pair in unique_pairs:
-            continue
-        elif pair[0]!=pair[1]:
-            unique_pairs.append(pair)
-            
-    return unique_pairs
-
+    for index,row in df[:100].iterrows():
+        print(index)
