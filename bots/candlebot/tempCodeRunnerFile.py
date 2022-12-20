@@ -1,2 +1,2 @@
 
-        base='TETHER',
+    counts=countero2(df['red'])

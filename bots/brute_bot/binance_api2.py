@@ -7,10 +7,39 @@ import logging
 logging.basicConfig(level=logging.INFO,filename='binance_log.log',filemode='w')
 import datetime
 import pandas as pd 
-import random 
-from playground import return_on_failure,retry_on_index_failure
+import random  
+import time 
+from functools import wraps 
+
+def return_on_failure(value1):
+  def decorate(f):
+    def applicator(*args, **kwargs):
+      try:
+         return f(*args,**kwargs)
+      except Exception as er:
+         print('Error')
+         logging.info(str(er))
+         return value1,str(er)
+    return applicator
+  return decorate
 
 
+
+def retry_on_index_failure(value):
+  def decorate(f):
+    def applicator(*args, **kwargs):
+      i=0
+      while i<5:
+        i+=1
+        try:
+           return f(*args,**kwargs)
+        except IndexError as er:
+           time.sleep(2)
+           logging.info(' retrying on failure ')
+           print('Error')
+           return value
+    return applicator
+  return decorate
 
 class BApi:
 # config methods 
@@ -24,7 +53,8 @@ class BApi:
         self.close_residue=1 # dollar close residue 
         self.order=None
         self.time_format='%Y-%m-%d %H:%M:%S'
-        self.system_status=self.check_status()
+        if 0:
+            self.system_status=self.check_status()
         self.dust=1 # cant sell 100% :( 
         
         self.kline_d={}
